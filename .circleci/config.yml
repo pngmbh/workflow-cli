@@ -6,8 +6,23 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Build (all)
+          name: Run tests
           command: make test
+      - run:
+          name: Set environment variables
+          command: |
+            echo "export GIT_TAG=$(git describe --abbrev=0 --tags)" >> $BASH_ENV
+            echo "export REVISION=$(git rev-parse --short HEAD)" >> $BASH_ENV
+            source $BASH_ENV
+      - run:
+          name: Build all
+          command: |
+            docker run -e BUILD_ARCH=amd64 \
+            -e REVISION=$REVISION \
+            -e GIT_TAG=$GIT_TAG \
+            -e DIST_DIR=/upload \
+            -v $(pwd)/_dist/:/upload \
+            --rm quay.io/deisci/workflow-cli-dev:$REVISION make build-all
       - store_artifacts:
           path: _dist/
           destination: bin
