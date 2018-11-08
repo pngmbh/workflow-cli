@@ -31,6 +31,13 @@ func TestParseType(t *testing.T) {
 		t.Errorf("type was not cmd (got %s) or psName was not %s (got %s)", psType, deployPod, psName)
 	}
 
+	// test newer style of Deployment pod name
+	deployPod = "nonfat-yearbook-cmd-57f6c4bb68-7na91"
+	psType, psName = parseType(deployPod, appID)
+	if psType != "cmd" || psName != deployPod {
+		t.Errorf("type was not cmd (got %s) or psName was not %s (got %s)", psType, deployPod, psName)
+	}
+
 	// test type by itself
 	psType, psName = parseType("cmd", "fake")
 	if psType != "cmd" || psName != "" {
