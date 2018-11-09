@@ -126,7 +126,7 @@ func parseType(target string, appID string) (string, string) {
 		// the API requires the type, for now
 		// regex matches against how Deployment pod name is constructed
 		regex := regexp.MustCompile("[a-z0-9]{8,10}-[a-z0-9]{5}$")
-		if regex.MatchString(replaced) {
+		if regex.MatchString(replaced) || len(parts) == 2 {
 			psType = parts[0]
 		} else {
 			psType = parts[1]
