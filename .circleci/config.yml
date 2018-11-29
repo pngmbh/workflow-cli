@@ -22,7 +22,34 @@ jobs:
             -e GIT_TAG=$GIT_TAG \
             -e DIST_DIR=/upload \
             -v $(pwd)/_dist/:/upload \
-            --rm quay.io/deisci/workflow-cli-dev:$REVISION make build-all
-      - store_artifacts:
-          path: _dist/
-          destination: bin
+            --rm quay.io/deisci/workflow-cli-dev:$REVISION make build-latest
+      - persist_to_workspace:
+          root: _dist
+          paths:
+            - deis-latest-darwin-amd64
+            - deis-latest-linux-amd64
+            - deis-latest-windows-amd64.exe
+  publish-github-release:
+    docker:
+      - image: cibuilds/github:0.10
+    steps:
+      - attach_workspace:
+          at: ./bin
+      - run:
+          name: "Publish Release on GitHub"
+          command: |
+            echo ghr -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${CIRCLE_TAG} ./artifacts/bin;
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${CIRCLE_TAG} ./artifacts/bin
+workflows:
+  version: 2
+  main:
+    jobs:
+      - build
+      - publish-github-release:
+          requires:
+            - build
+          filters:
+            branches:
+              ignore: /foo/
+            tags:
+              only: /.*/
